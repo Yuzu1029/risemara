@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sophisticated Gacha Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -18,55 +18,98 @@
             --bg-card: #1e293b;
         }
 
-        body {
+        /* 画面全体を確実に100%に固定し、スクロールバーを出さない */
+        html, body {
             font-family: 'Noto Sans JP', sans-serif;
             background-color: var(--bg-dark);
             color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
             user-select: none;
-            height: 100vh;
-            width: 100vw;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* 洗練された背景グラデーション */
-        .bg-ambient {
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 70%);
-            z-index: -1;
-        }
+        /* スクロールバー非表示 */
+        .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
 
         /* 画面トランジション */
         .screen-transition {
-            transition: opacity 0.5s ease, transform 0.5s ease;
+            transition: opacity 0.4s ease;
         }
         .screen-hidden {
             opacity: 0;
             pointer-events: none;
             position: absolute;
             inset: 0;
-            transform: scale(0.98);
+            display: none !important;
         }
         .screen-visible {
             opacity: 1;
             pointer-events: auto;
-            position: relative;
-            width: 100%; height: 100%;
-            transform: scale(1);
+            position: absolute;
+            inset: 0;
+            display: flex !important;
         }
 
-        /* バナータブ（左側） */
+        /* --------------------------------------
+           バナータブ（全体画像表示対応）
+           -------------------------------------- */
         .banner-tab {
+            position: relative;
+            overflow: hidden;
             transition: all 0.3s ease;
             background: rgba(255, 255, 255, 0.03);
-            border-left: 2px solid transparent;
+            border-left: 3px solid transparent;
+            height: 4.5rem;
+            flex-shrink: 0;
         }
         .banner-tab.active {
-            background: rgba(255, 255, 255, 0.1);
             border-left-color: #f8fafc;
         }
-        .banner-tab:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.06);
+        .tab-bg-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.3;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 0;
+        }
+        .banner-tab.active .tab-bg-img {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+        .banner-tab:hover:not(.active) .tab-bg-img {
+            opacity: 0.5;
+        }
+        .tab-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.6) 50%, transparent 100%);
+            z-index: 1;
+        }
+        .tab-content {
+            position: relative;
+            z-index: 2;
+            padding: 0 1.25rem;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            color: #94a3b8;
+        }
+        .banner-tab.active .tab-content {
+            color: #ffffff;
+            font-weight: 700;
         }
 
         /* ボタンデザイン（ミニマル） */
@@ -92,21 +135,14 @@
             background: #e2e8f0;
         }
 
-        /* カードコンテナ（スクロールバー非表示） */
-        .card-container {
-            scrollbar-width: none; 
-            -ms-overflow-style: none;
-        }
-        .card-container::-webkit-scrollbar { display: none; }
-
         @keyframes card-reveal {
             0% { opacity: 0; transform: translateY(20px); filter: blur(4px); }
             100% { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
 
         .result-card {
-            width: 120px;
-            height: 240px;
+            width: 110px;
+            height: 220px;
             flex-shrink: 0;
             position: relative;
             background-color: var(--bg-card);
@@ -117,6 +153,9 @@
             animation: card-reveal 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
             overflow: hidden;
             border-radius: 4px;
+        }
+        @media (min-width: 768px) {
+            .result-card { width: 120px; height: 240px; }
         }
 
         /* レアリティ別のアクセントカラー */
@@ -135,9 +174,9 @@
 
         .rarity-label {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 12px;
+            top: 8px;
+            left: 8px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: 1px;
             z-index: 10;
@@ -168,7 +207,7 @@
         .card-name-bar {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            padding: 20px 8px 8px 8px;
+            padding: 16px 6px 6px 6px;
             background: linear-gradient(to top, rgba(15, 23, 42, 0.95), transparent);
             text-align: center;
         }
@@ -203,63 +242,63 @@
     </style>
 </head>
 <body>
-    <div class="bg-ambient"></div>
 
-    <div id="app" class="w-full h-full flex flex-col relative">
+    <div id="app" class="w-full h-full relative overflow-hidden">
 
         <!-- ============================== -->
         <!-- BANNER SCREEN (Home)           -->
         <!-- ============================== -->
-        <div id="banner-screen" class="screen-transition screen-visible flex h-full">
+        <div id="banner-screen" class="screen-transition screen-visible w-full h-full">
             
-            <!-- Left Sidebar (Tabs) -->
-            <div class="w-[280px] h-full flex flex-col border-r border-slate-700/50 pt-12 z-20 bg-slate-900/50 backdrop-blur-sm">
-                <div class="px-6 mb-8">
-                    <h1 class="text-xl font-light tracking-[0.2em] text-slate-300">SCOUT</h1>
-                </div>
+            <!-- 全画面背景画像 (object-cover で画面全体を隙間なく埋める) -->
+            <img id="main-banner-char" src="" class="absolute inset-0 w-full h-full object-cover z-0 opacity-90 transition-opacity duration-500" alt="Featured">
+            
+            <!-- 視認性向上のためのグラデーション -->
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/40 to-transparent z-0"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent z-0"></div>
 
-                <div class="flex flex-col gap-1 w-full">
-                    <!-- Banner A Tab -->
-                    <div id="tab-bannerA" class="banner-tab active w-full py-4 px-6 cursor-pointer flex items-center gap-4" onclick="switchBanner('bannerA')">
-                        <img id="tab-img-A" src="" class="h-12 w-12 object-cover rounded shadow-sm border border-slate-600" alt="Tab">
-                        <div class="text-sm font-medium tracking-wide" id="tab-title-A">ピックアップ A</div>
-                    </div>
-                    <!-- Banner B Tab -->
-                    <div id="tab-bannerB" class="banner-tab w-full py-4 px-6 cursor-pointer flex items-center gap-4 text-slate-400" onclick="switchBanner('bannerB')">
-                        <img id="tab-img-B" src="" class="h-12 w-12 object-cover rounded shadow-sm border border-slate-700" alt="Tab">
-                        <div class="text-sm font-medium tracking-wide" id="tab-title-B">ピックアップ B</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Banner Display -->
-            <div class="flex-1 relative h-full flex items-center justify-center overflow-hidden">
+            <!-- UIレイヤー -->
+            <div class="absolute inset-0 z-10 flex w-full h-full">
                 
-                <!-- Background visual element -->
-                <div class="absolute inset-0 opacity-20">
-                    <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-transparent to-slate-900 z-10"></div>
+                <!-- Left Sidebar (Tabs) -->
+                <div class="w-[260px] md:w-[300px] h-full flex flex-col border-r border-slate-700/40 pt-8 md:pt-12 bg-slate-950/50 backdrop-blur-md shrink-0">
+                    <div class="px-6 mb-6 shrink-0">
+                        <h1 class="text-lg md:text-xl font-light tracking-[0.2em] text-slate-300">SCOUT</h1>
+                    </div>
+
+                    <!-- タブリスト -->
+                    <div class="flex flex-col gap-1 w-full flex-1 overflow-y-auto scrollbar-hide">
+                        <!-- Banner A Tab -->
+                        <div id="tab-bannerA" class="banner-tab active w-full cursor-pointer" onclick="switchBanner('bannerA')">
+                            <img id="tab-img-A" src="" class="tab-bg-img" alt="Tab">
+                            <div class="tab-overlay"></div>
+                            <div class="tab-content" id="tab-title-A">ピックアップ A</div>
+                        </div>
+                        <!-- Banner B Tab -->
+                        <div id="tab-bannerB" class="banner-tab w-full cursor-pointer" onclick="switchBanner('bannerB')">
+                            <img id="tab-img-B" src="" class="tab-bg-img" alt="Tab">
+                            <div class="tab-overlay"></div>
+                            <div class="tab-content" id="tab-title-B">ピックアップ B</div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Featured Character -->
-                <img id="main-banner-char" src="" class="absolute w-auto h-[100%] max-w-[120%] object-contain object-right-bottom z-10 opacity-90 transition-opacity duration-500" alt="Featured" style="right: -5%;">
-
-                <!-- UI Overlay -->
-                <div class="absolute inset-0 z-20 flex flex-col justify-between p-12 pointer-events-none">
-                    
+                <!-- Right Area (Text & Buttons) -->
+                <div class="flex-1 flex flex-col justify-between p-6 md:p-12">
                     <!-- Title -->
-                    <div class="pointer-events-auto mt-4">
-                        <p class="text-slate-400 text-sm tracking-[0.3em] mb-2 uppercase" id="main-banner-subtitle">Premium Scout</p>
-                        <h2 id="main-banner-title" class="text-4xl md:text-5xl font-bold tracking-wider leading-tight text-white drop-shadow-xl">
+                    <div class="mt-2 md:mt-4">
+                        <p class="text-slate-400 text-xs md:text-sm tracking-[0.3em] mb-1 md:mb-2 uppercase" id="main-banner-subtitle">Premium Scout</p>
+                        <h2 id="main-banner-title" class="text-3xl md:text-5xl font-bold tracking-wider leading-tight text-white drop-shadow-xl">
                             BANNER TITLE
                         </h2>
                     </div>
 
                     <!-- Actions -->
-                    <div class="pointer-events-auto flex gap-4 self-end mb-4 mr-12">
-                        <button onclick="pullGacha(1)" class="btn-minimal px-8 py-3 rounded text-sm tracking-widest font-medium min-w-[140px]">
+                    <div class="flex gap-3 md:gap-4 self-end mb-2 md:mb-4 mr-2 md:mr-6">
+                        <button onclick="pullGacha(1)" class="btn-minimal px-6 md:px-8 py-3 rounded text-xs md:text-sm tracking-widest font-medium min-w-[120px] md:min-w-[140px]">
                             1回引く
                         </button>
-                        <button onclick="pullGacha(10)" class="btn-minimal btn-primary px-10 py-3 rounded text-sm tracking-widest font-medium min-w-[180px]">
+                        <button onclick="pullGacha(10)" class="btn-minimal btn-primary px-8 md:px-10 py-3 rounded text-xs md:text-sm tracking-widest font-medium min-w-[150px] md:min-w-[180px]">
                             10回引く
                         </button>
                     </div>
@@ -270,24 +309,26 @@
         <!-- ============================== -->
         <!-- RESULTS SCREEN                 -->
         <!-- ============================== -->
-        <div id="results-screen" class="screen-transition screen-hidden flex flex-col justify-center items-center h-full bg-slate-900/90 backdrop-blur-md">
+        <div id="results-screen" class="screen-transition screen-hidden flex flex-col justify-between items-center w-full h-full bg-slate-950/95 backdrop-blur-md z-30 py-6 md:py-10">
             
-            <div class="text-center mb-12">
-                <h2 class="text-2xl font-light tracking-[0.3em] text-slate-200">SCOUT RESULT</h2>
-                <div class="h-[1px] w-16 bg-slate-500 mx-auto mt-4"></div>
+            <div class="text-center shrink-0 mt-2">
+                <h2 class="text-lg md:text-2xl font-light tracking-[0.3em] text-slate-200">SCOUT RESULT</h2>
+                <div class="h-[1px] w-12 md:w-16 bg-slate-500 mx-auto mt-2 md:mt-3"></div>
             </div>
             
-            <!-- カード一覧 -->
-            <div id="card-container" class="card-container flex gap-3 px-8 w-full max-w-7xl overflow-x-auto justify-start lg:justify-center items-center pb-4 pt-4">
-                <!-- Cards injected here via JS -->
+            <!-- カード一覧（中央寄せ＆横スクロール対応） -->
+            <div class="w-full flex overflow-x-auto scrollbar-hide my-auto px-4">
+                <div id="card-container" class="flex gap-2 md:gap-3 m-auto py-2">
+                    <!-- Cards injected here via JS -->
+                </div>
             </div>
 
             <!-- アクションボタン -->
-            <div class="mt-12 flex gap-6 z-20">
-                <button onclick="backToBanner()" class="btn-minimal px-10 py-3 rounded text-sm tracking-widest">
+            <div class="flex flex-row gap-4 md:gap-6 z-20 shrink-0 mb-2">
+                <button onclick="backToBanner()" class="btn-minimal px-6 md:px-10 py-3 rounded text-xs md:text-sm tracking-widest">
                     結果を確定
                 </button>
-                <button id="btn-pull-again" onclick="confirmPullAgain()" class="btn-minimal btn-primary px-10 py-3 rounded text-sm tracking-widest">
+                <button id="btn-pull-again" onclick="confirmPullAgain()" class="btn-minimal btn-primary px-6 md:px-10 py-3 rounded text-xs md:text-sm tracking-widest">
                     もう一度引く
                 </button>
             </div>
@@ -296,21 +337,20 @@
         <!-- ============================== -->
         <!-- CONFIRMATION MODAL             -->
         <!-- ============================== -->
-        <div id="confirm-modal" class="modal-backdrop">
-            <div class="modal-content rounded-md p-8 w-[400px] max-w-[90%] shadow-2xl relative overflow-hidden">
-                <!-- Decorative top line -->
+        <div id="confirm-modal" class="modal-backdrop z-50">
+            <div class="modal-content rounded-md p-6 md:p-8 w-[360px] md:w-[400px] max-w-[90%] shadow-2xl relative overflow-hidden">
                 <div class="absolute top-0 left-0 right-0 h-[2px] bg-slate-500"></div>
                 
-                <h3 class="text-lg font-medium text-white mb-4 tracking-wide">ガチャ確認</h3>
-                <p class="text-slate-300 text-sm leading-relaxed mb-8">
+                <h3 class="text-base md:text-lg font-medium text-white mb-3 md:mb-4 tracking-wide">ガチャ確認</h3>
+                <p class="text-slate-300 text-xs md:text-sm leading-relaxed mb-6 md:mb-8">
                     今回の結果を破棄して、<br>もう一度ガチャを引き直します。<br>よろしいですか？
                 </p>
                 
-                <div class="flex gap-4 justify-end">
-                    <button onclick="closeModal()" class="btn-minimal px-6 py-2 rounded text-xs tracking-widest">
+                <div class="flex gap-3 md:gap-4 justify-end">
+                    <button onclick="closeModal()" class="btn-minimal px-5 py-2 rounded text-xs tracking-widest">
                         キャンセル
                     </button>
-                    <button onclick="executePullAgain()" class="btn-minimal btn-primary px-6 py-2 rounded text-xs tracking-widest">
+                    <button onclick="executePullAgain()" class="btn-minimal btn-primary px-5 py-2 rounded text-xs tracking-widest">
                         決定
                     </button>
                 </div>
@@ -321,52 +361,46 @@
 
     <script>
         // ==========================================
-        // 【キャラクター設定】 (Character Configuration)
-        // ここに10キャラクター分の画像URLと設定を入れます。
-        // ※背景が暗い画像や、透明背景のキャラ絵が似合います。
+        // 【キャラクター設定】 
         // ==========================================
         const myCharacters = [
-            // SSR (確率低 - とてもレア)
-            { id: 1, name: "閃光の剣姫", rarity: "SSR", imageUrl: "" },
-            { id: 2, name: "漆黒の魔導士", rarity: "SSR", imageUrl: "" },
+            { id: 1, name: "閃光の剣姫", rarity: "SSR", imageUrl: "https://placehold.co/240x480/fbbf24/000?text=SSR+1" },
+            { id: 2, name: "漆黒の魔導士", rarity: "SSR", imageUrl: "https://placehold.co/240x480/fbbf24/000?text=SSR+2" },
             
-            // SR (確率中 - 少しレア)
-            { id: 3, name: "白銀の騎士", rarity: "SR", imageUrl: "" },
-            { id: 4, name: "紅蓮の弓使い", rarity: "SR", imageUrl: "" },
-            { id: 5, name: "蒼天の槍兵", rarity: "SR", imageUrl: "" },
+            { id: 3, name: "白銀の騎士", rarity: "SR", imageUrl: "https://placehold.co/240x480/c084fc/fff?text=SR+1" },
+            { id: 4, name: "紅蓮の弓使い", rarity: "SR", imageUrl: "https://placehold.co/240x480/c084fc/fff?text=SR+2" },
+            { id: 5, name: "蒼天の槍兵", rarity: "SR", imageUrl: "https://placehold.co/240x480/c084fc/fff?text=SR+3" },
             
-            // R (確率高 - ノーマル)
-            { id: 6, name: "傭兵", rarity: "R", imageUrl: "" },
-            { id: 7, name: "斥候", rarity: "R", imageUrl: "" },
-            { id: 8, name: "治癒士", rarity: "R", imageUrl: "" },
-            { id: 9, name: "魔術師見習い", rarity: "R", imageUrl: "" },
-            { id: 10, name: "重装歩兵", rarity: "R", imageUrl: "https://images.unsplash.com/photo-1620063234914-610190117ff0?q=80&w=400&auto=format&fit=crop" },
+            { id: 6, name: "傭兵", rarity: "R", imageUrl: "https://placehold.co/240x480/60a5fa/000?text=R+1" },
+            { id: 7, name: "斥候", rarity: "R", imageUrl: "https://placehold.co/240x480/60a5fa/000?text=R+2" },
+            { id: 8, name: "治癒士", rarity: "R", imageUrl: "https://placehold.co/240x480/60a5fa/000?text=R+3" },
+            { id: 9, name: "魔術師見習い", rarity: "R", imageUrl: "https://placehold.co/240x480/60a5fa/000?text=R+4" },
+            { id: 10, name: "重装歩兵", rarity: "R", imageUrl: "https://placehold.co/240x480/60a5fa/000?text=R+5" },
         ];
 
         // ==========================================
-        // バナー設定 (Banner Configuration)
+        // バナー設定
         // ==========================================
         const banners = {
             bannerA: {
                 id: 'bannerA',
-                title: "てつやひく",
+                title: "ガチャA",
                 subtitle: "PREMIUM SCOUT VOL.1",
-                featuredImage: "https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?q=80&w=800&auto=format&fit=crop", 
-                tabImage: "https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?q=80&w=150&auto=format&fit=crop",
+                featuredImage: "https://placehold.co/1920x1080/1e293b/fff?text=Banner+A+Fullscreen", 
+                tabImage: "https://placehold.co/400x150/1e293b/fff?text=Tab+A+Bg",
             },
             bannerB: {
                 id: 'bannerB',
-                title: "がちゃB",
+                title: "ガチャB",
                 subtitle: "PREMIUM SCOUT VOL.2",
-                featuredImage: "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=800&auto=format&fit=crop",
-                tabImage: "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=150&auto=format&fit=crop",
+                featuredImage: "https://placehold.co/1920x1080/334155/fff?text=Banner+B+Fullscreen",
+                tabImage: "https://placehold.co/400x150/334155/fff?text=Tab+B+Bg",
             }
         };
 
         let currentBanner = 'bannerA';
         let lastPullCount = 10;
 
-        // UI要素
         const bannerScreen = document.getElementById('banner-screen');
         const resultsScreen = document.getElementById('results-screen');
         const cardContainer = document.getElementById('card-container');
@@ -374,7 +408,6 @@
         const modal = document.getElementById('confirm-modal');
 
         function init() {
-            // タブ画像の初期化
             document.getElementById('tab-img-A').src = banners.bannerA.tabImage;
             document.getElementById('tab-title-A').innerText = banners.bannerA.title;
             document.getElementById('tab-img-B').src = banners.bannerB.tabImage;
@@ -386,14 +419,11 @@
         function switchBanner(bannerId) {
             currentBanner = bannerId;
             
-            // タブUI更新
             document.querySelectorAll('.banner-tab').forEach(tab => {
                 tab.classList.remove('active');
-                tab.classList.add('text-slate-400');
             });
             const activeTab = document.getElementById(`tab-${bannerId}`);
             activeTab.classList.add('active');
-            activeTab.classList.remove('text-slate-400');
 
             renderBanner(bannerId);
         }
@@ -404,7 +434,6 @@
             const subTitleEl = document.getElementById('main-banner-subtitle');
             const imgEl = document.getElementById('main-banner-char');
 
-            // フェード効果
             titleEl.style.opacity = 0;
             subTitleEl.style.opacity = 0;
             imgEl.style.opacity = 0;
@@ -434,7 +463,6 @@
         }
 
         function getRandomCharacter() {
-            // 提供割合の内部設定 (SSR: 5%, SR: 25%, R: 70%)
             const roll = Math.random() * 100;
             let targetRarity = "R";
             if (roll <= 5) targetRarity = "SSR";
@@ -446,25 +474,18 @@
         }
 
         function showResults(pulledChars) {
-            // 画面切り替え
             bannerScreen.classList.remove('screen-visible');
             bannerScreen.classList.add('screen-hidden');
             
             resultsScreen.classList.remove('screen-hidden');
             resultsScreen.classList.add('screen-visible');
 
-            // レイアウトとボタンテキストの更新
             if(lastPullCount === 1) {
                 btnPullAgain.innerText = "もう一度 1回引く";
-                // 1回引く場合は画面中央に強制的に配置
-                cardContainer.className = "card-container flex gap-3 px-8 w-full max-w-7xl overflow-x-auto justify-center items-center pb-4 pt-4";
             } else {
                 btnPullAgain.innerText = "もう一度 10回引く";
-                // 10回引く場合は画面幅に応じて左揃え(スマホスクロール用) または 中央揃え(PC用)
-                cardContainer.className = "card-container flex gap-3 px-8 w-full max-w-7xl overflow-x-auto justify-start lg:justify-center items-center pb-4 pt-4";
             }
 
-            // カード生成
             cardContainer.innerHTML = '';
             pulledChars.forEach((char, index) => {
                 const delay = index * 0.08; 
@@ -495,7 +516,6 @@
             bannerScreen.classList.add('screen-visible');
         }
 
-        // --- モーダル制御 ---
         function confirmPullAgain() {
             modal.classList.add('show');
         }
@@ -506,7 +526,6 @@
 
         function executePullAgain() {
             closeModal();
-            // 少し遅延させてモーダルが消えてからガチャを回す
             setTimeout(() => {
                 pullGacha(lastPullCount);
             }, 300);
