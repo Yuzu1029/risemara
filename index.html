@@ -27,6 +27,7 @@
             padding: 0;
             width: 100vw;
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
@@ -239,6 +240,160 @@
         .modal-backdrop.show .modal-content {
             transform: translateY(0);
         }
+
+        /* ==========================================================
+           レスポンシブ対応（スマホ縦・横 / デスクトップ）
+           デスクトップ（768px以上）は既存のUI・見た目を一切変更しない。
+           768px未満（スマホ）のみ、向きに応じてレイアウトを最適化する。
+           ========================================================== */
+
+        /* ---- スマホ 縦画面 (portrait) ---- */
+        @media (max-width: 767px) and (orientation: portrait) {
+            #sidebar {
+                width: 92px !important;
+            }
+            #sidebar-title {
+                display: none;
+            }
+            .banner-tab {
+                height: 4rem;
+            }
+            .tab-content {
+                padding: 0 0.5rem;
+                font-size: 0.62rem;
+                letter-spacing: 0.02em;
+                line-height: 1.15;
+                text-align: left;
+            }
+            .tab-overlay {
+                background: linear-gradient(90deg, rgba(15,23,42,0.97) 0%, rgba(15,23,42,0.85) 60%, rgba(15,23,42,0.5) 100%);
+            }
+            #right-area {
+                padding: 1rem 1rem 1.1rem 1rem !important;
+            }
+            #main-banner-subtitle {
+                font-size: 0.6rem !important;
+                letter-spacing: 0.15em !important;
+            }
+            #main-banner-title {
+                font-size: 1.5rem !important;
+                line-height: 1.25 !important;
+            }
+            #gacha-actions {
+                gap: 0.5rem !important;
+                margin-right: 0 !important;
+            }
+            #gacha-actions button {
+                padding: 0.65rem 0.5rem !important;
+                font-size: 0.65rem !important;
+                min-width: 0 !important;
+                letter-spacing: 0.05em !important;
+                flex: 1 1 0;
+            }
+            #results-screen {
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+            }
+            #results-screen h2 {
+                font-size: 1rem !important;
+                letter-spacing: 0.2em !important;
+            }
+            .result-card {
+                width: 84px;
+                height: 168px;
+            }
+            #results-actions {
+                gap: 0.75rem !important;
+            }
+            #results-actions button {
+                padding: 0.6rem 1rem !important;
+                font-size: 0.62rem !important;
+                letter-spacing: 0.05em !important;
+            }
+            .modal-content {
+                width: 88% !important;
+                padding: 1.25rem !important;
+            }
+        }
+
+        /* ---- スマホ 横画面 (landscape / 低高さ) ---- */
+        @media (max-width: 926px) and (orientation: landscape) and (max-height: 500px) {
+            #sidebar {
+                width: 150px !important;
+            }
+            .banner-tab {
+                height: 3rem;
+            }
+            .tab-content {
+                padding: 0 0.75rem;
+                font-size: 0.65rem;
+            }
+            #sidebar-header {
+                margin-bottom: 0.5rem !important;
+                padding-top: 0 !important;
+            }
+            #right-area {
+                padding: 0.75rem 1.25rem !important;
+            }
+            #main-banner-subtitle {
+                font-size: 0.6rem !important;
+                margin-bottom: 0.25rem !important;
+            }
+            #main-banner-title {
+                font-size: 1.5rem !important;
+            }
+            #gacha-actions {
+                margin-bottom: 0.25rem !important;
+                gap: 0.5rem !important;
+            }
+            #gacha-actions button {
+                padding: 0.5rem 1rem !important;
+                font-size: 0.62rem !important;
+                min-width: 90px !important;
+            }
+            #results-screen {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            #results-screen h2 {
+                font-size: 0.9rem !important;
+            }
+            .result-card {
+                width: 70px;
+                height: 150px;
+            }
+            .card-name-bar {
+                padding: 10px 4px 4px 4px;
+            }
+            .card-name-bar span {
+                font-size: 0.6rem !important;
+            }
+            #results-actions {
+                gap: 0.5rem !important;
+                margin-bottom: 0 !important;
+            }
+            #results-actions button {
+                padding: 0.45rem 0.9rem !important;
+                font-size: 0.6rem !important;
+            }
+            .modal-content {
+                width: 320px !important;
+                padding: 1rem 1.25rem !important;
+            }
+            .modal-content h3 {
+                margin-bottom: 0.5rem !important;
+            }
+            .modal-content p {
+                margin-bottom: 1rem !important;
+            }
+        }
+
+        /* 非常に小さい/短い画面の保険（縦・横共通） */
+        @media (max-height: 420px) {
+            .result-card {
+                height: 130px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -261,9 +416,9 @@
             <div class="absolute inset-0 z-10 flex w-full h-full">
                 
                 <!-- Left Sidebar (Tabs) -->
-                <div class="w-[260px] md:w-[300px] h-full flex flex-col border-r border-slate-700/40 pt-8 md:pt-12 bg-slate-950/50 backdrop-blur-md shrink-0">
-                    <div class="px-6 mb-6 shrink-0">
-                        <h1 class="text-lg md:text-xl font-light tracking-[0.2em] text-slate-300">SCOUT</h1>
+                <div id="sidebar" class="w-[260px] md:w-[300px] h-full flex flex-col border-r border-slate-700/40 pt-8 md:pt-12 bg-slate-950/50 backdrop-blur-md shrink-0">
+                    <div id="sidebar-header" class="px-6 mb-6 shrink-0">
+                        <h1 id="sidebar-title" class="text-lg md:text-xl font-light tracking-[0.2em] text-slate-300">SCOUT</h1>
                     </div>
 
                     <!-- タブリスト -->
@@ -284,7 +439,7 @@
                 </div>
 
                 <!-- Right Area (Text & Buttons) -->
-                <div class="flex-1 flex flex-col justify-between p-6 md:p-12">
+                <div id="right-area" class="flex-1 flex flex-col justify-between p-6 md:p-12">
                     <!-- Title -->
                     <div class="mt-2 md:mt-4">
                         <p class="text-slate-400 text-xs md:text-sm tracking-[0.3em] mb-1 md:mb-2 uppercase" id="main-banner-subtitle">Premium Scout</p>
@@ -294,7 +449,7 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex gap-3 md:gap-4 self-end mb-2 md:mb-4 mr-2 md:mr-6">
+                    <div id="gacha-actions" class="flex gap-3 md:gap-4 self-end mb-2 md:mb-4 mr-2 md:mr-6">
                         <button onclick="pullGacha(1)" class="btn-minimal px-6 md:px-8 py-3 rounded text-xs md:text-sm tracking-widest font-medium min-w-[120px] md:min-w-[140px]">
                             1回引く
                         </button>
@@ -324,7 +479,7 @@
             </div>
 
             <!-- アクションボタン -->
-            <div class="flex flex-row gap-4 md:gap-6 z-20 shrink-0 mb-2">
+            <div id="results-actions" class="flex flex-row gap-4 md:gap-6 z-20 shrink-0 mb-2">
                 <button onclick="backToBanner()" class="btn-minimal px-6 md:px-10 py-3 rounded text-xs md:text-sm tracking-widest">
                     結果を確定
                 </button>
@@ -384,14 +539,14 @@
         const banners = {
             bannerA: {
                 id: 'bannerA',
-                title: "ガチャA",
+                title: "星降る夜のピックアップ",
                 subtitle: "PREMIUM SCOUT VOL.1",
                 featuredImage: "https://placehold.co/1920x1080/1e293b/fff?text=Banner+A+Fullscreen", 
                 tabImage: "https://placehold.co/400x150/1e293b/fff?text=Tab+A+Bg",
             },
             bannerB: {
                 id: 'bannerB',
-                title: "ガチャB",
+                title: "伝説の騎士団ガチャ",
                 subtitle: "PREMIUM SCOUT VOL.2",
                 featuredImage: "https://placehold.co/1920x1080/334155/fff?text=Banner+B+Fullscreen",
                 tabImage: "https://placehold.co/400x150/334155/fff?text=Tab+B+Bg",
